@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landfill Fortune</title>
+    <script type="module" crossorigin src="./assets/index-CLkgM_2H.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-FMUAFDc_.css">
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hidden">
+      <div class="hud-tl">
+        <div class="coins"><span class="coin"></span><span id="coins">0</span></div>
+
+        <div class="card pack">
+          <div class="row">
+            <span class="stat"><svg class="ic" viewBox="0 0 24 24"><path d="M7 9a5 5 0 0 1 10 0v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM9.5 6V4.5a2.5 2.5 0 0 1 5 0V6M9.5 13h5v4h-5z"/></svg>Backpack</span>
+            <span id="bag-count">0</span>
+          </div>
+          <div class="bar"><div id="bag-fill"></div></div>
+          <div class="row sub" id="drive-row" hidden>
+            <span class="stat"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16v12H4zM7 15h.01M11 15h6"/></svg>Hard drives</span>
+            <span id="drive-count">0</span>
+          </div>
+        </div>
+
+        <div class="card market">
+          <div class="row">
+            <span class="stat"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>Day <span id="day">1</span></span>
+            <span id="day-headline">Flat prices</span>
+          </div>
+          <div class="bar thin"><div id="day-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="hud-tc">
+        <span class="label">Search zones</span>
+        <div id="zones"></div>
+      </div>
+
+      <div class="hud-tr card depth">
+        <div class="label">Depth</div>
+        <div class="depth-body">
+          <div class="gauge"><div id="depth-bands"></div><div id="depth-marker"></div></div>
+          <div class="depth-read">
+            <div id="depth-value">—</div>
+            <div id="depth-layer">Off the pile</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="build-banner" class="hidden"><b>Build mode</b> <kbd>Click</kbd> place <kbd>R</kbd> rotate <kbd>X</kbd> pick up <kbd>B</kbd> done</div>
+      <div id="crosshair"></div>
+      <div id="prompt"></div>
+      <div id="pickup"></div>
+
+      <div class="hud-bc">
+        <div id="toolbar"></div>
+        <div class="stamina-wrap">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></svg>
+          <div class="stamina"><div id="stamina-fill"></div></div>
+        </div>
+      </div>
+
+      <div id="toasts"></div>
+      <div class="hud-br"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>Click</b> dig · <b>1–4</b> tools · <b>E</b> use · <b>B</b> build · <b>M</b> mute</div>
+      <div id="fps" hidden></div>
+    </div>
+
+    <div id="overlay-start" class="overlay light">
+      <div class="panel start">
+        <div class="eyebrow">Vertical slice · prototype</div>
+        <h1 class="logo"><span class="l1">Landfill</span><span class="l2">F<i class="coin big"></i>rtune</span></h1>
+        <p class="lead">Somewhere under twelve thousand pieces of trash is a hard drive holding <b>8,000&nbsp;ByteCoin</b>. Dig down through the years, sell what you find, buy better tools, and test every drive at the camp laptop.</p>
+        <div class="controls">
+          <div><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
+          <div><span class="keys"><kbd>Mouse</kbd></span><span>Look</span></div>
+          <div><span class="keys"><kbd>Click</kbd></span><span>Dig (hold to keep digging)</span></div>
+          <div><span class="keys"><kbd>E</kbd></span><span>Sell · Shop · Test drive</span></div>
+          <div><span class="keys"><kbd>Shift</kbd></span><span>Sprint</span></div>
+          <div><span class="keys"><kbd>Space</kbd></span><span>Jump</span></div>
+          <div><span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></span><span>Switch tool (or Q)</span></div>
+          <div><span class="keys"><kbd>B</kbd></span><span>Build in the sorting yard</span></div>
+          <div><span class="keys"><kbd>M</kbd></span><span>Mute sound</span></div>
+        </div>
+        <div id="save-info" class="save-info hidden"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="start-btn">Start digging</button>
+          <button class="btn hidden" id="new-btn">New game</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay-pause" class="overlay hidden">
+      <div class="panel small">
+        <h2>Paused</h2>
+        <p class="lead">Your dig is saved.</p>
+        <button class="btn primary" id="resume-btn">Resume</button>
+      </div>
+    </div>
+
+    <div id="modal-shop" class="overlay hidden">
+      <div class="panel shop">
+        <div class="panel-head">
+          <h2>Junk shop</h2>
+          <div class="coins small"><span class="coin"></span><span id="shop-coins">0</span></div>
+        </div>
+        <p class="keeper" id="shop-keeper"></p>
+        <div id="shop-list"></div>
+        <div class="section-title">Today's prices at the sell bin · day <span id="shop-day">1</span></div>
+        <div id="shop-prices"></div>
+        <button class="btn" id="shop-close">Back to digging</button>
+      </div>
+    </div>
+
+    <div id="modal-sorter" class="overlay hidden">
+      <div class="panel sorter">
+        <h2>Sorter exits</h2>
+        <p class="lead">Items come in from behind. Choose what leaves through each side. Anything with no exit jams the sorter.</p>
+        <div class="exits" id="sorter-exits"></div>
+        <button class="btn primary" id="sorter-close">Done</button>
+      </div>
+    </div>
+
+    <div id="modal-laptop" class="overlay hidden">
+      <div class="panel laptop">
+        <div class="panel-head">
+          <h2>Drive test</h2>
+          <span class="tag" id="laptop-tag">Reading…</span>
+        </div>
+        <div class="terminal" id="laptop-log"></div>
+        <div class="progress"><div id="laptop-bar"></div></div>
+        <div id="laptop-result" class="hidden">
+          <div class="result-title" id="laptop-title"></div>
+          <p class="result-msg" id="laptop-msg"></p>
+          <div class="bonus hidden" id="laptop-bonus"></div>
+          <div class="hint" id="laptop-hint"></div>
+        </div>
+        <button class="btn primary hidden" id="laptop-close">Back to digging</button>
+      </div>
+    </div>
+
+    <div id="overlay-end" class="overlay light hidden">
+      <div class="panel end">
+        <i class="coin huge"></i>
+        <div class="eyebrow">wallet.dat · 8,000 ByteCoin</div>
+        <h1>You found it!</h1>
+        <p class="lead">The real drive was hiding at the bottom of the pile all along.</p>
+        <div class="stats" id="end-stats"></div>
+        <button class="btn primary" id="end-restart">Dig again</button>
+      </div>
+    </div>
+
+  </body>
+</html>
